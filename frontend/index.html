@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ONXY CLOUD PRO | Background P2P Server</title>
+    <title>ONXY CLOUD V10 | Ultimate P2P Infrastructure</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -15,18 +15,47 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
         
-        :root { --brand: #a855f7; --bg: #020202; }
-        body { background: var(--bg); color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
-        .glass { background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .hero-mesh { background: radial-gradient(at 0% 0%, hsla(263,93%,16%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(263,93%,10%,1) 0, transparent 50%), #020202; }
+        :root { --brand: #a855f7; --bg: #050505; }
+        body { 
+            background: var(--bg); 
+            color: #fff; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            margin: 0; 
+            overscroll-behavior: none;
+        }
+        
+        .hero-mesh {
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(263,93%,16%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(280,93%,10%,1) 0, transparent 50%);
+            background-color: #050505;
+        }
+
+        .glass { background: rgba(10, 10, 15, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); }
+        
         .hide-scroll::-webkit-scrollbar { display: none; }
-        .active-tab { color: var(--brand); background: rgba(168, 85, 247, 0.1); border-bottom: 2px solid var(--brand); }
-        .status-pulse { animation: status-glow 1.5s infinite alternate; }
-        @keyframes status-glow { from { opacity: 0.5; } to { opacity: 1; } }
+        
+        /* Layout Fix for Mobile */
+        .app-container { height: 100vh; display: flex; flex-direction: column; }
+        .content-area { flex: 1; overflow-y: auto; padding-bottom: 100px; }
+        .nav-fixed { position: fixed; bottom: 0; left: 0; right: 0; height: 80px; z-index: 100; }
+
+        .active-tab { color: var(--brand); border-bottom: 2px solid var(--brand); background: rgba(168, 85, 247, 0.05); }
+        
+        pre code { font-family: 'JetBrains Mono', monospace; }
+        
+        .status-online { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); border-color: var(--brand) !important; }
+
+        /* Background Keep-Alive Audio Hack */
+        #silent-audio { display: none; }
     </style>
 </head>
 <body>
     <div id="root"></div>
+    <audio id="silent-audio" loop>
+        <source src="https://raw.githubusercontent.com/anars/blank-audio/master/10-seconds-of-silence.mp3" type="audio/mp3">
+    </audio>
 
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
@@ -38,74 +67,103 @@
 
         const App = () => {
             const [view, setView] = useState('HOME');
-            const [projects, setProjects] = useState(() => JSON.parse(localStorage.getItem('onxy_v9_data') || '[]'));
-            const [activeId, setActiveId] = useState(() => sessionStorage.getItem('onxy_active_id') || null);
+            const [projects, setProjects] = useState(() => JSON.parse(localStorage.getItem('onxy_v10_data') || '[]'));
+            const [activeId, setActiveId] = useState(null);
             const [activeFileIdx, setActiveFileIdx] = useState(0);
             const [isOnline, setIsOnline] = useState(false);
             const [logs, setLogs] = useState([]);
             
             const peerRef = useRef(null);
-            const wakeLockRef = useRef(null);
+            const audioRef = useRef(null);
 
             const activeProject = useMemo(() => projects.find(p => p.id === activeId), [projects, activeId]);
 
             useEffect(() => {
-                localStorage.setItem('onxy_v9_data', JSON.stringify(projects));
+                localStorage.setItem('onxy_v10_data', JSON.stringify(projects));
+                if (window.lucide) window.lucide.createIcons();
             }, [projects]);
 
-            useEffect(() => {
-                if (activeId) sessionStorage.setItem('onxy_active_id', activeId);
-            }, [activeId]);
-
             const addLog = (msg, type = 'info') => {
-                setLogs(prev => [{ msg, type, time: new Date().toLocaleTimeString() }, ...prev].slice(0, 25));
+                setLogs(prev => [{ msg, type, time: new Date().toLocaleTimeString() }, ...prev].slice(0, 30));
             };
 
-            // --- BACKGROUND PROTECTION ENGINE ---
-            const requestWakeLock = async () => {
-                try {
-                    if ('wakeLock' in navigator) {
-                        wakeLockRef.current = await navigator.wakeLock.request('screen');
-                        addLog("WakeLock Ativo: CPU em alta performance", "success");
-                    }
-                } catch (err) {
-                    addLog("WakeLock falhou: Background limitado", "error");
+            // --- PROJECT MGMT ---
+            const createProject = () => {
+                const name = prompt("Nome do Subdomínio (ex: meu-app):");
+                if(!name) return;
+                const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.random().toString(36).substr(2, 4);
+                const newProj = {
+                    id, name: name.toUpperCase(),
+                    files: [
+                        { name: 'index.html', content: '<div class="main">\n  <h1>ONXY CLOUD V10</h1>\n  <p>Status: Ativo e Global</p>\n</div>' },
+                        { name: 'style.css', content: 'body { background: #050505; color: #a855f7; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; text-align: center; }' }
+                    ]
+                };
+                setProjects([...projects, newProj]);
+                setActiveId(id);
+                setView('EDITOR');
+                addLog(`Instância ${name} inicializada.`);
+            };
+
+            const deleteProject = (id, e) => {
+                e.stopPropagation();
+                if(confirm("Deseja deletar este projeto permanentemente?")) {
+                    setProjects(prev => prev.filter(p => p.id !== id));
+                    if(activeId === id) setActiveId(null);
+                    addLog("Projeto removido.", "warn");
                 }
             };
 
-            const releaseWakeLock = () => {
-                if (wakeLockRef.current) {
-                    wakeLockRef.current.release();
-                    wakeLockRef.current = null;
-                }
+            const addFile = () => {
+                const fn = prompt("Nome do arquivo (ex: script.js):");
+                if(!fn) return;
+                const updated = projects.map(p => {
+                    if(p.id === activeId) return {...p, files: [...p.files, {name: fn, content: ''}]};
+                    return p;
+                });
+                setProjects(updated);
+                setActiveFileIdx(activeProject.files.length);
             };
 
-            // --- PEER ENGINE ---
-            const toggleBroadcast = () => {
+            const removeFile = (idx, e) => {
+                e.stopPropagation();
+                if(activeProject.files.length <= 1) return;
+                const updated = projects.map(p => {
+                    if(p.id === activeId) return {...p, files: p.files.filter((_, i) => i !== idx)};
+                    return p;
+                });
+                setProjects(updated);
+                setActiveFileIdx(0);
+            };
+
+            // --- DEPLOY & BACKGROUND ---
+            const toggleDeploy = async () => {
                 if (isOnline) {
-                    if (peerRef.current) peerRef.current.destroy();
-                    releaseWakeLock();
+                    if(peerRef.current) peerRef.current.destroy();
+                    document.getElementById('silent-audio').pause();
                     setIsOnline(false);
-                    addLog("Servidor desligado.", "warn");
+                    addLog("Deploy encerrado.", "warn");
                 } else {
-                    const peerId = `onxy-${activeProject.id}`;
+                    const peerId = `onxy-${activeId}`;
                     const peer = new Peer(peerId);
                     
                     peer.on('open', (id) => {
                         setIsOnline(true);
-                        requestWakeLock();
-                        addLog(`Nó Online Globalmente: ${id}`, "success");
+                        // Ativa o áudio silencioso para manter o processo vivo em segundo plano
+                        const audio = document.getElementById('silent-audio');
+                        audio.play().catch(() => addLog("Toque na tela para ativar Background Mode", "warn"));
+                        addLog(`Servidor rodando em: ${id}`, "success");
                     });
 
                     peer.on('connection', (conn) => {
-                        addLog(`Visita de: ${conn.peer.slice(-5)}`, "net");
-                        conn.on('data', (data) => {
-                            if (data.type === 'SYNC') conn.send({ files: activeProject.files });
+                        addLog(`Conexão P2P estabelecida`, "net");
+                        conn.on('data', (d) => {
+                            if(d.type === 'SYNC') conn.send({ files: activeProject.files });
                         });
                     });
 
-                    peer.on('error', (err) => {
-                        addLog("Erro crítico de rede", "error");
+                    peer.on('error', () => {
+                        addLog("Erro de rede. Tente outro nome.", "error");
                         setIsOnline(false);
                     });
 
@@ -113,79 +171,86 @@
                 }
             };
 
-            // Auto-reconnect on refresh
-            useEffect(() => {
-                if (activeId && sessionStorage.getItem('onxy_was_online') === 'true') {
-                    // Timeout pequeno para garantir que o PeerJS carregou
-                    setTimeout(toggleBroadcast, 1000);
-                }
-            }, []);
-
-            useEffect(() => {
-                sessionStorage.setItem('onxy_was_online', isOnline);
-            }, [isOnline]);
-
-            // --- UI ACTIONS ---
-            const createProject = () => {
-                const name = prompt("Nome do Subdomínio (ex: portal-vendas):");
-                if(!name) return;
-                const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.random().toString(36).substr(2, 4);
-                const newProj = {
-                    id, name: name.toUpperCase(),
-                    files: [
-                        { name: 'index.html', content: '<h1>Servidor Background Ativo</h1>' },
-                        { name: 'style.css', content: 'body { background: #0a0a0a; color: #a855f7; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }' }
-                    ]
-                };
-                setProjects([...projects, newProj]);
-                setActiveId(id);
-                setView('EDITOR');
-            };
-
             const nodeQuery = new URLSearchParams(window.location.search).get('node');
-            if (nodeQuery) return <ClientGateway nodeId={nodeQuery} />;
-
-            if (view === 'HOME') return (
-                <div className="h-screen w-full overflow-y-auto hero-mesh hide-scroll">
-                    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center">
-                        <div className="w-24 h-24 bg-brand rounded-[2.5rem] flex items-center justify-center mb-10 shadow-2xl shadow-brand/40">
-                            <Icon name="server" size={48} className="text-white" />
-                        </div>
-                        <h1 className="text-7xl font-black tracking-tighter mb-4 italic uppercase">ONXY <span className="text-brand">CLOUD</span></h1>
-                        <p className="text-gray-500 font-bold uppercase tracking-[0.6em] mb-12 text-[10px]">Persistent Background Hosting</p>
-                        
-                        <div className="flex flex-col gap-4 w-full max-w-sm">
-                            <button onClick={() => setView('DASHBOARD')} className="bg-brand py-6 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all">Entrar no Console</button>
-                            <button onClick={createProject} className="bg-white/5 border border-white/10 py-6 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all">Novo Subdomínio</button>
-                        </div>
-                    </div>
-                </div>
-            );
+            if (nodeQuery) return <Gateway nodeId={nodeQuery} />;
 
             return (
-                <div className="h-screen flex flex-col bg-black">
+                <div className="app-container">
+                    {/* Header */}
                     <header className="h-16 flex items-center justify-between px-6 glass shrink-0">
-                        <div className="flex items-center gap-3" onClick={() => setView('HOME')}>
-                            <Icon name="zap" className="text-brand fill-current" size={24} />
+                        <div className="flex items-center gap-2" onClick={() => setView('HOME')}>
+                            <Icon name="cloud-lightning" className="text-brand fill-current" size={24} />
                             <span className="font-black tracking-tighter text-xl uppercase italic">Onxy</span>
                         </div>
-                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${isOnline ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
-                            <div className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-500 status-pulse' : 'bg-red-500'}`}></div>
-                            <span className="text-[9px] font-bold uppercase tracking-widest">{isOnline ? 'Background Active' : 'Offline'}</span>
+                        <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 status-online' : 'bg-red-500'}`}></div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">V10 Pro</span>
                         </div>
                     </header>
 
-                    <main className="flex-1 overflow-hidden relative">
+                    <div className="content-area hide-scroll">
+                        {view === 'HOME' && (
+                            <div className="hero-mesh min-h-full p-6 pb-24">
+                                <div className="max-w-4xl mx-auto space-y-16 py-12">
+                                    <div className="text-center space-y-6">
+                                        <div className="inline-block p-4 bg-brand/10 rounded-3xl mb-4">
+                                            <Icon name="shield-check" size={40} className="text-brand" />
+                                        </div>
+                                        <h1 className="text-6xl font-black tracking-tighter italic uppercase">Global <span className="text-brand">Hosting</span></h1>
+                                        <p className="text-gray-400 text-sm max-w-md mx-auto leading-relaxed">
+                                            Infraestrutura P2P que transforma seu celular em um servidor mundial. Sem limites, sem taxas, 100% descentralizado.
+                                        </p>
+                                        <div className="flex flex-col gap-3 pt-6">
+                                            <button onClick={() => setView('DASHBOARD')} className="bg-brand py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl">Acessar Console</button>
+                                            <button onClick={createProject} className="bg-white/5 border border-white/10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest">Novo Subdomínio</button>
+                                        </div>
+                                    </div>
+
+                                    {/* Documentação */}
+                                    <section className="space-y-8">
+                                        <h2 className="text-2xl font-black italic border-l-4 border-brand pl-4">Documentação Técnica</h2>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                                            <div className="glass-card p-6 rounded-[2rem] space-y-4">
+                                                <h3 className="font-bold text-brand">Arquitetura P2P</h3>
+                                                <p className="text-gray-400 leading-relaxed">
+                                                    Diferente do hosting tradicional, o ONXY não envia seus dados para uma nuvem. Ele cria um canal direto criptografado via <strong>WebRTC</strong>. Quando um cliente acessa seu link, o protocolo STUN localiza seu hardware e transfere o site bit-a-bit.
+                                                </p>
+                                            </div>
+                                            <div className="glass-card p-6 rounded-[2rem] space-y-4">
+                                                <h3 className="font-bold text-brand">Keep-Alive Engine</h3>
+                                                <p className="text-gray-400 leading-relaxed">
+                                                    O V10 Pro utiliza um <strong>Audio Service Loop</strong>. Ao ativar o deploy, o sistema inicia um rastro de áudio silencioso, o que impede que o Android/iOS congele o processo do navegador quando você alterna de aba ou bloqueia a tela.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    
+                                    <footer className="text-center py-10 opacity-30">
+                                        <div className="text-[10px] font-black uppercase tracking-[0.5em]">By dgxteamgg</div>
+                                    </footer>
+                                </div>
+                            </div>
+                        )}
+
                         {view === 'DASHBOARD' && (
-                            <div className="h-full p-6 overflow-y-auto hide-scroll space-y-8 pb-24">
-                                <h3 className="text-[10px] font-black uppercase text-gray-600 tracking-[0.4em]">Meus Servidores</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Minhas Instâncias</h3>
+                                    <button onClick={createProject} className="text-brand"><Icon name="plus-circle" size={28} /></button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 italic">
                                     {projects.map(p => (
-                                        <div key={p.id} onClick={() => { setActiveId(p.id); setView('EDITOR'); }} className="bg-white/5 border border-white/10 p-6 rounded-[2.5rem] flex flex-col justify-between h-40 hover:border-brand/40 transition-all cursor-pointer">
-                                            <Icon name="cpu" className="text-brand" />
-                                            <div>
-                                                <div className="font-black text-lg italic tracking-tighter">{p.name}</div>
-                                                <div className="text-[9px] text-gray-500 font-mono">id: {p.id}</div>
+                                        <div key={p.id} onClick={() => { setActiveId(p.id); setView('EDITOR'); }} className="glass-card p-6 rounded-[2.5rem] flex flex-col justify-between h-44 hover:border-brand transition-all cursor-pointer relative overflow-hidden group">
+                                            <div className="flex justify-between items-start relative z-10">
+                                                <Icon name="cpu" className="text-brand" size={32} />
+                                                <button onClick={(e) => deleteProject(p.id, e)} className="text-gray-700 hover:text-red-500"><Icon name="trash-2" size={20}/></button>
+                                            </div>
+                                            <div className="relative z-10">
+                                                <div className="font-black text-xl tracking-tighter uppercase">{p.name}</div>
+                                                <div className="text-[9px] font-mono text-gray-500 uppercase tracking-widest mt-1 italic">Status: Standby</div>
+                                            </div>
+                                            <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                                <Icon name="server" size={120} />
                                             </div>
                                         </div>
                                     ))}
@@ -194,69 +259,81 @@
                         )}
 
                         {view === 'EDITOR' && activeProject && (
-                            <div className="h-full flex flex-col">
+                            <div className="h-full flex flex-col italic">
                                 <div className="flex bg-white/5 border-b border-white/10 overflow-x-auto hide-scroll shrink-0">
                                     {activeProject.files.map((f, i) => (
-                                        <button key={i} onClick={() => setActiveFileIdx(i)} className={`px-6 py-4 text-[10px] font-mono shrink-0 ${activeFileIdx === i ? 'active-tab' : 'text-gray-500'}`}>
-                                            {f.name}
-                                        </button>
+                                        <div key={i} className={`flex items-center shrink-0 border-r border-white/10 ${activeFileIdx === i ? 'active-tab' : 'text-gray-500'}`}>
+                                            <button onClick={() => setActiveFileIdx(i)} className="px-5 py-4 text-[10px] font-mono font-bold">{f.name}</button>
+                                            <button onClick={(e) => removeFile(i, e)} className="pr-3 opacity-50 hover:text-red-500"><Icon name="x" size={12}/></button>
+                                        </div>
                                     ))}
-                                    <button onClick={() => {
-                                        const fn = prompt("Arquivo:");
-                                        if(fn) {
-                                            const up = projects.map(p => p.id === activeId ? {...p, files: [...p.files, {name: fn, content: ''}]} : p);
-                                            setProjects(up);
-                                        }
-                                    }} className="px-6 text-brand"><Icon name="plus" size={16}/></button>
+                                    <button onClick={addFile} className="px-6 text-brand"><Icon name="plus" size={18}/></button>
                                 </div>
-                                <textarea 
-                                    className="flex-1 bg-transparent p-6 font-mono text-sm text-gray-300 outline-none resize-none"
-                                    value={activeProject.files[activeFileIdx].content}
-                                    onChange={(e) => {
-                                        const up = projects.map(p => {
-                                            if(p.id === activeId) {
-                                                const fs = [...p.files]; fs[activeFileIdx].content = e.target.value;
-                                                return {...p, files: fs};
-                                            }
-                                            return p;
-                                        });
-                                        setProjects(up);
-                                    }}
-                                />
+                                <div className="flex-1 relative">
+                                    <textarea 
+                                        className="w-full h-full bg-transparent p-6 font-mono text-sm text-gray-300 outline-none resize-none leading-relaxed"
+                                        spellCheck="false"
+                                        value={activeProject.files[activeFileIdx].content}
+                                        onChange={(e) => {
+                                            const up = projects.map(p => {
+                                                if(p.id === activeId) {
+                                                    const fs = [...p.files]; fs[activeFileIdx].content = e.target.value;
+                                                    return {...p, files: fs};
+                                                }
+                                                return p;
+                                            });
+                                            setProjects(up);
+                                        }}
+                                    />
+                                </div>
                             </div>
                         )}
 
-                        {view === 'DEPLOY' && (
-                            <div className="h-full p-6 flex flex-col gap-4 pb-24 overflow-y-auto">
-                                <div className="p-8 bg-white/5 border border-white/10 rounded-[2.5rem]">
-                                    <p className="text-[10px] text-gray-500 font-bold mb-4 uppercase tracking-widest text-center">Dica: Mantenha a aba aberta para máxima performance.</p>
-                                    <button onClick={toggleBroadcast} className={`w-full py-6 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${isOnline ? 'bg-red-600' : 'bg-brand'}`}>
-                                        {isOnline ? 'Desativar Servidor' : 'Ligar Servidor Global'}
+                        {view === 'DEPLOY' && activeProject && (
+                            <div className="p-6 space-y-6">
+                                <div className={`p-8 rounded-[3rem] border-2 transition-all duration-700 ${isOnline ? 'status-online bg-brand/5' : 'bg-white/5 border-white/5'}`}>
+                                    <h3 className="text-[10px] font-black uppercase text-gray-500 mb-6 tracking-widest text-center italic">Central de Transmissão</h3>
+                                    <button onClick={toggleDeploy} className={`w-full py-6 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl transition-all ${isOnline ? 'bg-red-600' : 'bg-brand'}`}>
+                                        {isOnline ? 'Interromper Serviço' : 'Ativar Servidor Global'}
                                     </button>
+                                    
                                     {isOnline && (
-                                        <div className="mt-6 p-4 bg-black/60 rounded-xl border border-brand/20">
-                                            <div className="text-[9px] text-brand font-bold uppercase mb-2">Public Link:</div>
-                                            <input readOnly value={`${window.location.origin}${window.location.pathname}?node=onxy-${activeId}`} className="w-full bg-transparent text-[10px] font-mono text-gray-400 outline-none mb-2" />
-                                            <button onClick={() => {
-                                                navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?node=onxy-${activeId}`);
-                                                addLog("Link copiado.");
-                                            }} className="w-full py-2 bg-brand/20 text-brand text-[10px] font-bold rounded-lg">Copiar URL</button>
+                                        <div className="mt-8 space-y-4 animate-in zoom-in-95 duration-300">
+                                            <div className="text-[9px] font-black text-brand uppercase tracking-widest text-center italic">Sua URL Pública e Permanente:</div>
+                                            <div className="p-4 bg-black/60 rounded-2xl border border-brand/20 flex items-center gap-3">
+                                                <input readOnly value={`${window.location.origin}${window.location.pathname}?node=onxy-${activeId}`} className="flex-1 bg-transparent text-[10px] font-mono text-gray-400 outline-none" />
+                                                <button onClick={() => {
+                                                    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?node=onxy-${activeId}`);
+                                                    addLog("URL copiada com sucesso.");
+                                                }} className="text-brand"><Icon name="copy" size={20} /></button>
+                                            </div>
+                                            <p className="text-[9px] text-gray-600 text-center font-bold italic">O link funciona em qualquer lugar do mundo.</p>
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex-1 bg-white/5 rounded-[2.5rem] p-6 font-mono text-[10px] overflow-y-auto hide-scroll border border-white/5">
-                                    {logs.map((l, i) => (
-                                        <div key={i} className="mb-1"><span className="text-gray-700">[{l.time}]</span> <span className={l.type === 'success' ? 'text-green-500' : 'text-brand'}>{l.msg}</span></div>
-                                    ))}
+
+                                <div className="space-y-4 h-[300px] flex flex-col italic">
+                                    <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest px-2">Monitor de Rede & Logs</div>
+                                    <div className="flex-1 bg-white/5 rounded-[2rem] p-6 font-mono text-[10px] overflow-y-auto border border-white/5">
+                                        {logs.length === 0 && <div className="text-gray-800">Aguardando tráfego...</div>}
+                                        {logs.map((l, i) => (
+                                            <div key={i} className="mb-1.5 flex gap-2">
+                                                <span className="text-gray-700">[{l.time}]</span>
+                                                <span className={l.type === 'success' ? 'text-green-500' : l.type === 'error' ? 'text-red-500' : 'text-brand'}>{l.msg}</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         )}
-                    </main>
+                    </div>
 
-                    <nav className="h-20 border-t border-white/10 glass flex items-center justify-around shrink-0 z-50">
-                        <NavBtn active={view === 'DASHBOARD'} onClick={() => setView('DASHBOARD')} icon="layout" label="Cloud" />
-                        <NavBtn active={view === 'EDITOR'} onClick={() => setView('EDITOR')} icon="code" label="IDE" disabled={!activeId} />
+                    {/* Nav Bar */}
+                    <nav className="nav-fixed glass flex items-center justify-around px-4">
+                        <NavBtn active={view === 'DASHBOARD'} onClick={() => setView('DASHBOARD')} icon="layout-grid" label="Console" />
+                        <NavBtn active={view === 'EDITOR'} onClick={() => setView('EDITOR')} icon="terminal" label="IDE" disabled={!activeId} />
                         <NavBtn active={view === 'DEPLOY'} onClick={() => setView('DEPLOY')} icon="radio" label="Rede" disabled={!activeId} activeDot={isOnline} />
+                        <NavBtn active={view === 'HOME'} onClick={() => setView('HOME')} icon="help-circle" label="Ajuda" />
                     </nav>
                 </div>
             );
@@ -264,33 +341,42 @@
 
         const NavBtn = ({ active, onClick, icon, label, disabled, activeDot }) => (
             <button disabled={disabled} onClick={onClick} className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${disabled ? 'opacity-10' : ''} ${active ? 'text-brand scale-110' : 'text-gray-600'}`}>
-                <div className="relative"><Icon name={icon} />{activeDot && <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full animate-ping"></div>}</div>
-                <span className="text-[9px] uppercase font-black tracking-widest mt-1">{label}</span>
+                <div className="relative">
+                    <Icon name={icon} size={22} />
+                    {activeDot && <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full animate-ping"></div>}
+                </div>
+                <span className="text-[9px] uppercase font-black tracking-widest">{label}</span>
             </button>
         );
 
-        const ClientGateway = ({ nodeId }) => {
-            const [status, setStatus] = useState("Conectando ao Nó...");
+        const Gateway = ({ nodeId }) => {
+            const [status, setStatus] = useState("Resolvendo Endereço...");
             const [src, setSrc] = useState(null);
             useEffect(() => {
                 const p = new Peer();
                 p.on('open', () => {
                     const conn = p.connect(nodeId);
-                    conn.on('open', () => { setStatus("Nó Ativo. Baixando arquivos..."); conn.send({ type: 'SYNC' }); });
+                    conn.on('open', () => { 
+                        setStatus("Nó localizado! Sincronizando dados..."); 
+                        conn.send({ type: 'SYNC' }); 
+                    });
                     conn.on('data', (d) => {
                         const h = d.files.find(f => f.name.endsWith('.html'))?.content || '';
                         const c = d.files.find(f => f.name.endsWith('.css'))?.content || '';
                         const j = d.files.find(f => f.name.endsWith('.js'))?.content || '';
                         setSrc(`<html><head><style>${c}</style></head><body>${h}<script>${j}<\/script></body></html>`);
                     });
-                    conn.on('error', () => setStatus("Nó Offline."));
+                    conn.on('error', () => setStatus("Erro: O servidor está offline."));
                 });
             }, []);
             if (src) return <iframe srcDoc={src} className="w-full h-full border-none bg-white" />;
-            return <div className="h-screen bg-black flex flex-col items-center justify-center p-12 text-brand font-black italic uppercase tracking-widest text-center text-xs">
-                <div className="w-12 h-12 border-2 border-brand border-t-transparent rounded-full animate-spin mb-6"></div>
-                {status}
-            </div>;
+            return (
+                <div className="h-screen bg-black flex flex-col items-center justify-center p-12 text-center">
+                    <div className="w-16 h-16 border-4 border-brand border-t-transparent rounded-full animate-spin mb-8"></div>
+                    <div className="text-brand text-xs font-black uppercase tracking-[0.4em] italic">{status}</div>
+                    <p className="mt-12 text-gray-800 text-[9px] font-black uppercase tracking-widest italic">ONXY CLOUD GATEWAY</p>
+                </div>
+            );
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
