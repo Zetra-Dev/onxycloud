@@ -1,9 +1,9 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ONXY CLOUD V10 | Ultimate P2P Infrastructure</title>
+    <title>ONXY CLOUD | ONLY for devs  </title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -16,55 +16,81 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
         
         :root { --brand: #a855f7; --bg: #050505; }
+        
         body { 
             background: var(--bg); 
             color: #fff; 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             margin: 0; 
-            overscroll-behavior: none;
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-        }
-        
-        .hero-mesh {
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(263,93%,16%,1) 0, transparent 50%), 
-                radial-gradient(at 100% 0%, hsla(280,93%,10%,1) 0, transparent 50%);
-            background-color: #050505;
+            transition: background 0.5s ease;
         }
 
-        .glass { background: rgba(10, 10, 15, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); }
+        /* Efeito de Ruído/Noise */
+        .noise {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.04; pointer-events: none; z-index: 999;
+        }
+
+        .glass { background: rgba(5, 5, 5, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); }
         
         .hide-scroll::-webkit-scrollbar { display: none; }
         
-        .app-container { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .app-container { height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .content-area { flex: 1; overflow-y: auto; padding-bottom: 90px; }
-        .nav-fixed { position: fixed; bottom: 0; left: 0; right: 0; height: 80px; z-index: 100; background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.05); }
+        .nav-fixed { position: fixed; bottom: 0; left: 0; right: 0; height: 85px; z-index: 100; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(5,5,5,0.9); backdrop-filter: blur(15px); }
 
-        .active-tab { color: var(--brand); border-bottom: 2px solid var(--brand); background: rgba(168, 85, 247, 0.05); }
+        .active-tab { color: var(--brand); border-bottom: 2px solid var(--brand); background: rgba(255,255,255,0.03); }
         
-        .status-online { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); border-color: var(--brand) !important; }
+        /* Suggestion Dropdown */
+        .suggestion-box {
+            position: absolute; bottom: 85px; left: 20px; right: 20px; 
+            background: #111; border: 1px solid var(--brand);
+            border-radius: 12px; z-index: 1000; overflow: hidden; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            max-height: 200px; overflow-y: auto;
+        }
+        .suggestion-item { padding: 12px 20px; font-size: 13px; font-family: 'JetBrains Mono', monospace; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; }
+        .suggestion-item:hover { background: var(--brand); color: white; }
+        .suggestion-type { opacity: 0.4; font-size: 10px; text-transform: uppercase; }
 
-        .gateway-frame { width: 100vw; height: 100vh; border: none; display: block; background: #fff; }
-        .preview-frame { width: 100%; height: 100%; border: none; background: #fff; border-radius: 12px; }
+        /* Resoluções Preview */
+        .preview-wrapper { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+        .res-mobile { width: 375px; height: 667px; margin-top: 20px; }
+        .res-tablet { width: 768px; height: 1024px; margin-top: 20px; }
+        .res-desktop { width: 100%; height: 100%; border-radius: 0; }
 
-        #silent-audio { display: none; }
+        .theme-selector { width: 24px; height: 24px; border-radius: 8px; cursor: pointer; transition: transform 0.2s; }
+        .theme-selector:active { transform: scale(0.8); }
         
-        .editor-mode-btn { padding: 8px 16px; border-radius: 99px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s; }
-        .editor-mode-active { background: var(--brand); color: white; }
-        .editor-mode-inactive { background: rgba(255,255,255,0.05); color: #666; }
+        .code-editor { caret-color: var(--brand); }
     </style>
 </head>
 <body>
+    <div class="noise"></div>
     <div id="root"></div>
-    <audio id="silent-audio" loop>
-        <source src="https://raw.githubusercontent.com/anars/blank-audio/master/10-seconds-of-silence.mp3" type="audio/mp3">
-    </audio>
+    <audio id="silent-audio" loop><source src="https://raw.githubusercontent.com/anars/blank-audio/master/10-seconds-of-silence.mp3" type="audio/mp3"></audio>
 
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
+
+        const THEMES = {
+            VOID: { brand: '#a855f7', bg: '#050505', grad: 'radial-gradient(circle at 0% 0%, hsla(263,93%,12%,1) 0, transparent 55%)' },
+            OCEAN: { brand: '#0ea5e9', bg: '#020617', grad: 'radial-gradient(circle at 0% 0%, hsla(200,93%,12%,1) 0, transparent 55%)' },
+            NEON: { brand: '#22c55e', bg: '#050505', grad: 'radial-gradient(circle at 0% 0%, hsla(140,93%,10%,1) 0, transparent 55%)' },
+            EMBER: { brand: '#f43f5e', bg: '#090101', grad: 'radial-gradient(circle at 0% 0%, hsla(350,93%,12%,1) 0, transparent 55%)' },
+            LAVA: { brand: '#f59e0b', bg: '#0a0500', grad: 'radial-gradient(circle at 0% 0%, hsla(30,93%,12%,1) 0, transparent 55%)' }
+        };
+
+        const DICTIONARY = {
+            html: ['div', 'section', 'main', 'header', 'footer', 'nav', 'article', 'aside', 'span', 'p', 'h1', 'h2', 'h3', 'button', 'input', 'img', 'script', 'style', 'link', 'meta', 'canvas', 'video', 'audio', 'iframe'],
+            css: ['background', 'color', 'display: flex', 'justify-content: center', 'align-items: center', 'margin', 'padding', 'border', 'border-radius', 'position: relative', 'position: absolute', 'width', 'height', 'font-family', 'z-index', 'opacity', 'transition', 'animation', 'grid-template-columns', 'box-shadow'],
+            js: ['console.log', 'document.querySelector', 'addEventListener', 'fetch', 'JSON.parse', 'JSON.stringify', 'setTimeout', 'setInterval', 'function', 'const', 'let', 'async', 'await', 'window.location', 'localStorage.setItem', 'localStorage.getItem']
+        };
 
         const Icon = ({ name, size = 20, className = "" }) => {
             useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
@@ -73,148 +99,175 @@
 
         const App = () => {
             const [view, setView] = useState('HOME');
-            const [editorMode, setEditorMode] = useState('CODE'); // CODE, PREVIEW, LOGS
-            const [projects, setProjects] = useState(() => JSON.parse(localStorage.getItem('onxy_v10_data') || '[]'));
+            const [projects, setProjects] = useState(() => JSON.parse(localStorage.getItem('onxy_cloud_db') || '[]'));
+            const [theme, setTheme] = useState(() => localStorage.getItem('onxy_theme_v2') || 'VOID');
             const [activeId, setActiveId] = useState(null);
             const [activeFileIdx, setActiveFileIdx] = useState(0);
             const [isOnline, setIsOnline] = useState(false);
             const [logs, setLogs] = useState([]);
+            const [suggestions, setSuggestions] = useState([]);
+            const [previewRes, setPreviewRes] = useState('desktop');
+            const [editorMode, setEditorMode] = useState('CODE');
             
             const peerRef = useRef(null);
-
             const activeProject = useMemo(() => projects.find(p => p.id === activeId), [projects, activeId]);
 
             useEffect(() => {
-                localStorage.setItem('onxy_v10_data', JSON.stringify(projects));
-            }, [projects]);
+                localStorage.setItem('onxy_cloud_db', JSON.stringify(projects));
+                localStorage.setItem('onxy_theme_v2', theme);
+                const t = THEMES[theme];
+                document.documentElement.style.setProperty('--brand', t.brand);
+                document.documentElement.style.setProperty('--bg', t.bg);
+                document.body.style.background = t.bg;
+            }, [projects, theme]);
 
             const addLog = (msg, type = 'info') => {
                 setLogs(prev => [{ msg, type, time: new Date().toLocaleTimeString() }, ...prev].slice(0, 30));
             };
 
-            const createProject = () => {
-                const name = prompt("Nome do Projeto:");
-                if(!name) return;
-                const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.random().toString(36).substr(2, 4);
-                const newProj = {
-                    id, name: name.toUpperCase(),
-                    files: [
-                        { name: 'index.html', content: '<div style="padding:40px; text-align:center; font-family:sans-serif;">\n  <h1 style="color:#a855f7;">ONXY V10 LIVE</h1>\n  <p>Edite o código e veja o preview!</p>\n</div>' },
-                        { name: 'style.css', content: 'body { background: #0b0b0b; color: #fff; margin: 0; }' }
-                    ]
-                };
-                setProjects([...projects, newProj]);
-                setActiveId(id);
-                setView('EDITOR');
-                addLog(`Projeto ${name} criado.`);
-            };
-
-            const deleteProject = (id, e) => {
-                e.stopPropagation();
-                if(confirm("Deseja apagar este projeto permanentemente?")) {
-                    setProjects(prev => prev.filter(p => p.id !== id));
-                    if(activeId === id) setActiveId(null);
-                    addLog("Projeto removido.", "warn");
-                }
-            };
-
-            const removeFile = (idx, e) => {
-                e.stopPropagation();
-                if(activeProject.files.length <= 1) return;
+            // --- ENGINE DE SUGESTÕES PROATIVO ---
+            const handleTextChange = (val) => {
                 const updated = projects.map(p => {
-                    if(p.id === activeId) return {...p, files: p.files.filter((_, i) => i !== idx)};
+                    if(p.id === activeId) {
+                        const fs = [...p.files];
+                        fs[activeFileIdx].content = val;
+                        return {...p, files: fs};
+                    }
                     return p;
                 });
                 setProjects(updated);
-                setActiveFileIdx(0);
+
+                // Lógica de sugestão por caractere
+                const words = val.split(/[\s<>.()]/);
+                const lastWord = words[words.length - 1].toLowerCase();
+                const fileName = activeProject.files[activeFileIdx].name;
+                const ext = fileName.split('.').pop();
+
+                if (lastWord.length > 0) {
+                    const matches = (DICTIONARY[ext] || []).filter(item => 
+                        item.toLowerCase().startsWith(lastWord)
+                    );
+                    setSuggestions(matches.slice(0, 6));
+                } else {
+                    setSuggestions([]);
+                }
             };
 
-            const toggleDeploy = async () => {
+            const completeSuggestion = (word) => {
+                const currentContent = activeProject.files[activeFileIdx].content;
+                const fileName = activeProject.files[activeFileIdx].name;
+                const ext = fileName.split('.').pop();
+                
+                // Pega a última palavra incompleta
+                const words = currentContent.split(/([\s<>.()])/);
+                words[words.length - 1] = word;
+                
+                let finalInsert = words.join('');
+                if (ext === 'html' && !currentContent.includes('<' + word)) {
+                    // Se for HTML e não houver tag de abertura, formata como tag
+                    finalInsert = currentContent.replace(new RegExp(`${words[words.length-1]}$`), `<${word}></${word}>`);
+                }
+
+                handleTextChange(finalInsert);
+                setSuggestions([]);
+            };
+
+            const toggleCloud = async () => {
                 if (isOnline) {
-                    if(peerRef.current) peerRef.current.destroy();
-                    document.getElementById('silent-audio').pause();
+                    peerRef.current?.destroy();
                     setIsOnline(false);
-                    addLog("Servidor desligado.", "warn");
+                    addLog("Node offline.", "warn");
                 } else {
-                    const peerId = `onxy-${activeId}`;
-                    const peer = new Peer(peerId);
+                    const peer = new Peer(`onxy-${activeId}`);
                     peer.on('open', (id) => {
                         setIsOnline(true);
+                        addLog(`Host Ativo: ${id}`, "success");
                         document.getElementById('silent-audio').play().catch(()=>{});
-                        addLog(`Host Global: ${id}`, "success");
                     });
                     peer.on('connection', (conn) => {
-                        addLog(`Visitante Conectado`, "net");
-                        conn.on('data', (d) => { if(d.type === 'SYNC') conn.send({ files: activeProject.files }); });
+                        addLog("Novo visitante P2P", "net");
+                        conn.on('data', d => d.type === 'SYNC' && conn.send({ files: activeProject.files }));
                     });
-                    peer.on('error', () => { addLog("Erro de ID.", "error"); setIsOnline(false); });
                     peerRef.current = peer;
                 }
             };
 
-            const generatePreviewDoc = () => {
+            const getIframeSrc = () => {
                 if(!activeProject) return '';
                 const h = activeProject.files.find(f => f.name.endsWith('.html'))?.content || '';
                 const c = activeProject.files.find(f => f.name.endsWith('.css'))?.content || '';
                 const j = activeProject.files.find(f => f.name.endsWith('.js'))?.content || '';
-                return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body,html{margin:0;padding:0;}${c}</style></head><body>${h}<script>${j}<\/script></body></html>`;
+                return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>${c}</style></head><body>${h}<script>${j}<\/script></body></html>`;
             };
 
-            const nodeQuery = new URLSearchParams(window.location.search).get('node');
-            if (nodeQuery) return <Gateway nodeId={nodeQuery} />;
+            if (new URLSearchParams(window.location.search).get('node')) return <Gateway nodeId={new URLSearchParams(window.location.search).get('node')} />;
 
             return (
                 <div className="app-container">
-                    <header className="h-16 flex items-center justify-between px-6 glass shrink-0">
-                        <div className="flex items-center gap-2" onClick={() => setView('HOME')}>
-                            <Icon name="cloud-lightning" className="text-brand fill-current" size={24} />
-                            <span className="font-black tracking-tighter text-xl uppercase italic">Onxy</span>
+                    {/* Header Premium */}
+                    <header className="h-16 flex items-center justify-between px-6 glass shrink-0 relative z-[200]">
+                        <div className="flex items-center gap-3" onClick={() => setView('HOME')}>
+                            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+                                <Icon name="cloud" size={18} className="text-white fill-current" />
+                            </div>
+                            <span className="font-black tracking-tighter text-lg uppercase italic">ONXY <span className="text-brand">CLOUD</span></span>
                         </div>
-                        <div className="flex items-center gap-4">
-                            {view === 'EDITOR' && (
-                                <div className="flex bg-white/5 p-1 rounded-full gap-1">
-                                    <button onClick={() => setEditorMode('CODE')} className={`editor-mode-btn ${editorMode === 'CODE' ? 'editor-mode-active' : 'editor-mode-inactive'}`}>Code</button>
-                                    <button onClick={() => setEditorMode('PREVIEW')} className={`editor-mode-btn ${editorMode === 'PREVIEW' ? 'editor-mode-active' : 'editor-mode-inactive'}`}>Preview</button>
-                                </div>
-                            )}
-                            <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 status-online animate-pulse' : 'bg-red-500'}`}></div>
+                        <div className="flex items-center gap-2">
+                            {Object.entries(THEMES).map(([name, data]) => (
+                                <div key={name} onClick={() => setTheme(name)} className="theme-selector" style={{ background: data.brand, border: theme === name ? '2px solid white' : 'none' }}></div>
+                            ))}
                         </div>
                     </header>
 
                     <div className="content-area hide-scroll">
                         {view === 'HOME' && (
-                            <div className="hero-mesh min-h-full p-6">
+                            <div className="min-h-full p-8" style={{ backgroundImage: THEMES[theme].grad }}>
                                 <div className="max-w-4xl mx-auto space-y-12 py-10">
-                                    <div className="text-center space-y-6">
-                                        <div className="inline-block p-4 bg-brand/10 rounded-3xl mb-4"><Icon name="shield-check" size={40} className="text-brand" /></div>
-                                        <h1 className="text-6xl font-black tracking-tighter italic uppercase">V10 <span className="text-brand">Ultimate</span></h1>
-                                        <p className="text-gray-400 text-sm max-w-xs mx-auto">Ambiente de deploy P2P com Preview em tempo real e persistência de cache.</p>
-                                        <button onClick={() => setView('DASHBOARD')} className="bg-brand w-full py-5 rounded-2xl font-black text-xs uppercase shadow-xl">Dashboard</button>
-                                    </div>
-                                    <div className="grid gap-4">
-                                        <div className="glass-card p-6 rounded-[2rem] flex items-center gap-4">
-                                            <Icon name="zap" className="text-brand" />
-                                            <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Deploy em 1 toque</div>
-                                        </div>
-                                        <div className="glass-card p-6 rounded-[2rem] flex items-center gap-4">
-                                            <Icon name="eye" className="text-brand" />
-                                            <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Preview integrado</div>
+                                    <div className="text-center space-y-8">
+                                        <h1 className="text-7xl font-black tracking-tighter italic uppercase leading-[0.9] animate-in slide-in-from-bottom-10 duration-700">FOR <br/><span className="text-brand">DEVS</span></h1>
+                                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.4em]">Arquitetura P2P de Baixa Latência</p>
+                                        <div className="flex gap-4">
+                                            <button onClick={() => setView('DASHBOARD')} className="flex-1 bg-brand py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl hover:brightness-110 transition-all">Meus Projetos</button>
                                         </div>
                                     </div>
-                                    <footer className="text-center py-6 opacity-30 text-[9px] font-black uppercase tracking-[0.5em]">dgxteamgg</footer>
+
+                                    {/* Guia de Uso */}
+                                    <div className="grid gap-4 italic">
+                                        <div className="glass-card p-6 rounded-[2rem] space-y-3 border-l-4 border-l-brand">
+                                            <h4 className="text-brand font-black text-[10px] uppercase tracking-widest">O que é?</h4>
+                                            <p className="text-gray-400 text-xs">O ONXY Cloud utiliza WebRTC para transformar seu navegador em um servidor de arquivos distribuído.</p>
+                                        </div>
+                                        <div className="glass-card p-6 rounded-[2rem] space-y-3">
+                                            <h4 className="text-brand font-black text-[10px] uppercase tracking-widest">IntelliSense</h4>
+                                            <p className="text-gray-400 text-xs">Digite qualquer letra no editor e o sistema sugerirá tags HTML, propriedades CSS ou funções JS automaticamente.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
                         {view === 'DASHBOARD' && (
-                            <div className="p-6 space-y-8 animate-in fade-in">
-                                <div className="flex justify-between items-center"><h3 className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Meus Projetos</h3><button onClick={createProject} className="text-brand"><Icon name="plus-circle" size={28} /></button></div>
-                                <div className="grid gap-4 italic">
-                                    {projects.length === 0 && <div className="text-center py-20 text-gray-700 font-black uppercase text-[10px] tracking-widest">Nenhum projeto ativo</div>}
+                            <div className="p-6 space-y-8 animate-in fade-in duration-500">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-[10px] font-black uppercase text-gray-500 tracking-[0.2em] italic">Projetos em Nuvem</h3>
+                                    <button onClick={() => {
+                                        const n = prompt("Nome do App:");
+                                        if(n) {
+                                            const id = n.toLowerCase().replace(/\s+/g, '-') + '-' + Math.random().toString(36).substr(2,4);
+                                            setProjects([...projects, { id, name: n.toUpperCase(), files: [{ name: 'index.html', content: '<h1 style="text-align:center; font-family:sans-serif; color:purple;">ONXY V2</h1>' }] }]);
+                                            setActiveId(id); setView('EDITOR');
+                                        }
+                                    }} className="bg-brand/10 text-brand p-3 rounded-full"><Icon name="plus" size={24}/></button>
+                                </div>
+                                <div className="grid gap-5">
+                                    {projects.length === 0 && <div className="py-20 text-center opacity-20 uppercase font-black text-xs tracking-widest">Vazio</div>}
                                     {projects.map(p => (
-                                        <div key={p.id} onClick={() => { setActiveId(p.id); setView('EDITOR'); setEditorMode('CODE'); }} className="glass-card p-6 rounded-[2.5rem] flex flex-col justify-between h-40 hover:border-brand transition-all">
-                                            <div className="flex justify-between items-start"><Icon name="cpu" className="text-brand" size={28} /><button onClick={(e) => deleteProject(p.id, e)} className="text-gray-700 hover:text-red-500 p-2"><Icon name="trash-2" size={18}/></button></div>
-                                            <div><div className="font-black text-lg tracking-tighter uppercase">{p.name}</div><div className="text-[9px] font-mono text-gray-500 mt-1">/{p.id}</div></div>
+                                        <div key={p.id} onClick={() => { setActiveId(p.id); setView('EDITOR'); }} className="glass-card p-6 rounded-[2.5rem] flex items-center justify-between group active:scale-95 transition-all">
+                                            <div className="flex items-center gap-5">
+                                                <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-brand"><Icon name="cpu" /></div>
+                                                <div><div className="font-black uppercase italic text-sm">{p.name}</div><div className="text-[9px] font-mono text-gray-600">NODE: {p.id}</div></div>
+                                            </div>
+                                            <button onClick={(e) => { e.stopPropagation(); if(confirm("Apagar?")) setProjects(projects.filter(x => x.id !== p.id)); }} className="text-gray-800 hover:text-red-500 p-2"><Icon name="trash-2" size={18}/></button>
                                         </div>
                                     ))}
                                 </div>
@@ -222,66 +275,101 @@
                         )}
 
                         {view === 'EDITOR' && activeProject && (
-                            <div className="h-full flex flex-col italic">
-                                {editorMode === 'CODE' ? (
-                                    <>
-                                        <div className="flex bg-white/5 border-b border-white/10 overflow-x-auto shrink-0 hide-scroll">
-                                            {activeProject.files.map((f, i) => (
-                                                <div key={i} className={`flex items-center shrink-0 border-r border-white/10 ${activeFileIdx === i ? 'active-tab' : 'text-gray-500'}`}>
-                                                    <button onClick={() => setActiveFileIdx(i)} className="px-5 py-4 text-[10px] font-mono font-bold">{f.name}</button>
-                                                    <button onClick={(e) => removeFile(i, e)} className="pr-3 opacity-30 hover:text-red-500"><Icon name="x" size={12}/></button>
-                                                </div>
-                                            ))}
-                                            <button onClick={() => {
-                                                const fn = prompt("Nome do arquivo:");
-                                                if(fn) {
-                                                    const up = projects.map(p => p.id === activeId ? {...p, files: [...p.files, {name: fn, content: ''}]} : p);
-                                                    setProjects(up);
-                                                    setActiveFileIdx(activeProject.files.length);
-                                                }
-                                            }} className="px-6 text-brand"><Icon name="plus" size={16}/></button>
-                                        </div>
-                                        <textarea className="flex-1 bg-transparent p-6 font-mono text-sm text-gray-300 outline-none resize-none" value={activeProject.files[activeFileIdx].content} onChange={(e) => {
-                                            const up = projects.map(p => {
-                                                if(p.id === activeId) {
-                                                    const fs = [...p.files]; fs[activeFileIdx].content = e.target.value;
-                                                    return {...p, files: fs};
-                                                }
-                                                return p;
-                                            });
-                                            setProjects(up);
-                                        }} spellCheck="false" />
-                                    </>
-                                ) : (
-                                    <div className="flex-1 p-4">
-                                        <iframe srcDoc={generatePreviewDoc()} className="preview-frame shadow-2xl" />
+                            <div className="h-full flex flex-col relative">
+                                <div className="flex bg-black/40 border-b border-white/5 overflow-x-auto shrink-0 hide-scroll">
+                                    <div className="flex items-center px-4 gap-3 border-r border-white/5">
+                                        <button onClick={() => setEditorMode('CODE')} className={`p-2 rounded-lg ${editorMode === 'CODE' ? 'text-brand' : 'text-gray-600'}`}><Icon name="code" size={18}/></button>
+                                        <button onClick={() => setEditorMode('PREVIEW')} className={`p-2 rounded-lg ${editorMode === 'PREVIEW' ? 'text-brand' : 'text-gray-600'}`}><Icon name="eye" size={18}/></button>
                                     </div>
-                                )}
+                                    {activeProject.files.map((f, i) => (
+                                        <div key={i} className={`flex items-center shrink-0 border-r border-white/5 ${activeFileIdx === i ? 'active-tab' : 'text-gray-600'}`}>
+                                            <button onClick={() => { setActiveFileIdx(i); setEditorMode('CODE'); }} className="px-6 py-4 text-[11px] font-mono font-bold uppercase tracking-tighter">{f.name}</button>
+                                            <button onClick={(e) => { e.stopPropagation(); if(activeProject.files.length > 1) { 
+                                                const up = projects.map(p => p.id === activeId ? {...p, files: p.files.filter((_, idx) => idx !== i)} : p);
+                                                setProjects(up); setActiveFileIdx(0);
+                                            } }} className="pr-3 opacity-30"><Icon name="x" size={12}/></button>
+                                        </div>
+                                    ))}
+                                    <button onClick={() => {
+                                        const fn = prompt("Nome do arquivo (ex: style.css):");
+                                        if(fn) {
+                                            const up = projects.map(p => p.id === activeId ? {...p, files: [...p.files, {name: fn, content: ''}]} : p);
+                                            setProjects(up); setActiveFileIdx(activeProject.files.length);
+                                        }
+                                    }} className="px-6 text-brand"><Icon name="plus" size={18}/></button>
+                                </div>
+
+                                <div className="flex-1 relative overflow-hidden">
+                                    {editorMode === 'CODE' ? (
+                                        <>
+                                            <textarea className="code-editor w-full h-full bg-transparent p-6 font-mono text-sm text-gray-400 outline-none resize-none leading-relaxed" 
+                                                value={activeProject.files[activeFileIdx].content} 
+                                                onChange={(e) => handleTextChange(e.target.value)} 
+                                                spellCheck="false" 
+                                                placeholder="// Comece a digitar..."
+                                            />
+                                            {suggestions.length > 0 && (
+                                                <div className="suggestion-box animate-in slide-in-from-bottom-4">
+                                                    {suggestions.map(s => (
+                                                        <div key={s} className="suggestion-item" onClick={() => completeSuggestion(s)}>
+                                                            <span>{s}</span>
+                                                            <span className="suggestion-type">Auto</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="h-full flex flex-col p-4 bg-black/40">
+                                            <div className="flex justify-center gap-3 mb-4">
+                                                <button onClick={() => setPreviewRes('mobile')} className={`p-3 rounded-2xl ${previewRes === 'mobile' ? 'bg-brand text-white shadow-lg shadow-brand/30' : 'bg-white/5 text-gray-500'}`}><Icon name="smartphone" size={18}/></button>
+                                                <button onClick={() => setPreviewRes('tablet')} className={`p-3 rounded-2xl ${previewRes === 'tablet' ? 'bg-brand text-white shadow-lg shadow-brand/30' : 'bg-white/5 text-gray-500'}`}><Icon name="tablet" size={18}/></button>
+                                                <button onClick={() => setPreviewRes('desktop')} className={`p-3 rounded-2xl ${previewRes === 'desktop' ? 'bg-brand text-white shadow-lg shadow-brand/30' : 'bg-white/5 text-gray-500'}`}><Icon name="monitor" size={18}/></button>
+                                            </div>
+                                            <div className="flex-1 overflow-auto flex justify-center items-start pb-20">
+                                                <div className={`preview-wrapper ${previewRes === 'mobile' ? 'res-mobile' : previewRes === 'tablet' ? 'res-tablet' : 'res-desktop'}`}>
+                                                    <iframe srcDoc={getIframeSrc()} className="w-full h-full border-none" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
 
                         {view === 'DEPLOY' && activeProject && (
                             <div className="p-6 space-y-6">
-                                <div className={`p-8 rounded-[3rem] border-2 transition-all ${isOnline ? 'status-online bg-brand/5' : 'bg-white/5 border-white/5'}`}>
-                                    <h3 className="text-[10px] font-black uppercase text-gray-500 mb-6 tracking-widest text-center italic">Deploy Center</h3>
-                                    <button onClick={toggleDeploy} className={`w-full py-6 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl transition-all ${isOnline ? 'bg-red-600' : 'bg-brand'}`}>
-                                        {isOnline ? 'Parar Host' : 'Lançar ao Mundo'}
-                                    </button>
+                                <div className={`p-10 rounded-[3.5rem] border-2 transition-all duration-700 ${isOnline ? 'border-brand bg-brand/10' : 'bg-white/5 border-white/5'}`}>
+                                    <div className="flex flex-col items-center gap-6">
+                                        <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-all ${isOnline ? 'bg-brand text-white shadow-[0_0_40px_rgba(168,85,247,0.5)]' : 'bg-white/5 text-gray-700'}`}>
+                                            <Icon name="radio" size={32} className={isOnline ? 'animate-pulse' : ''} />
+                                        </div>
+                                        <div className="text-center">
+                                            <h3 className="text-[10px] font-black uppercase text-gray-500 tracking-[0.3em] mb-2">Transmissão P2P</h3>
+                                            <div className="text-xl font-black italic uppercase tracking-tighter">{isOnline ? 'Online' : 'Offline'}</div>
+                                        </div>
+                                        <button onClick={toggleCloud} className={`w-full py-6 rounded-3xl font-black text-xs uppercase shadow-2xl transition-all ${isOnline ? 'bg-red-600' : 'bg-brand'}`}>
+                                            {isOnline ? 'Cortar Conexão' : 'Iniciar Deployment'}
+                                        </button>
+                                    </div>
+
                                     {isOnline && (
-                                        <div className="mt-8 space-y-4 animate-in zoom-in-95">
-                                            <div className="p-4 bg-black/60 rounded-2xl border border-brand/20 flex items-center gap-3">
-                                                <input readOnly value={`${window.location.origin}${window.location.pathname}?node=onxy-${activeId}`} className="flex-1 bg-transparent text-[10px] font-mono text-gray-400 outline-none" />
-                                                <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?node=onxy-${activeId}`); addLog("Link copiado!"); }} className="text-brand"><Icon name="copy" size={20} /></button>
+                                        <div className="mt-10 space-y-4 animate-in zoom-in-95 duration-500">
+                                            <div className="text-[9px] font-black text-brand text-center uppercase tracking-widest italic">Acesso Universal:</div>
+                                            <div className="p-5 bg-black/60 rounded-[2rem] border border-brand/20 flex items-center gap-4">
+                                                <input readOnly value={`${window.location.origin}${window.location.pathname}?node=onxy-${activeId}`} className="flex-1 bg-transparent text-[11px] font-mono text-gray-500 outline-none" />
+                                                <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?node=onxy-${activeId}`); addLog("URL Copiada."); }} className="text-brand"><Icon name="copy" size={22}/></button>
                                             </div>
                                         </div>
                                     )}
                                 </div>
-                                <div className="space-y-4 italic">
-                                    <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest px-2">Console de Rede</span>
-                                    <div className="h-48 bg-white/5 rounded-[2rem] p-6 font-mono text-[10px] overflow-y-auto border border-white/5">
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black uppercase text-gray-600 px-4 tracking-[0.2em] italic">Console de Tráfego</h4>
+                                    <div className="h-64 bg-white/5 rounded-[2.5rem] p-8 font-mono text-[10px] overflow-y-auto border border-white/10 italic">
                                         {logs.map((l, i) => (
-                                            <div key={i} className="mb-1"><span className="text-gray-700">[{l.time}]</span> <span className={l.type === 'success' ? 'text-green-500' : 'text-brand'}>{l.msg}</span></div>
+                                            <div key={i} className="mb-2"><span className="opacity-30">[{l.time}]</span> <span className={l.type === 'success' ? 'text-green-500' : 'text-brand'}>{l.msg}</span></div>
                                         ))}
+                                        {logs.length === 0 && <div className="text-center py-10 opacity-20 uppercase font-black">Aguardando Eventos...</div>}
                                     </div>
                                 </div>
                             </div>
@@ -289,19 +377,22 @@
                     </div>
 
                     <nav className="nav-fixed flex items-center justify-around px-4">
-                        <NavBtn active={view === 'DASHBOARD'} onClick={() => setView('DASHBOARD')} icon="layout-grid" label="Cloud" />
+                        <NavBtn active={view === 'DASHBOARD'} onClick={() => setView('DASHBOARD')} icon="box" label="Cloud" />
                         <NavBtn active={view === 'EDITOR'} onClick={() => setView('EDITOR')} icon="terminal" label="IDE" disabled={!activeId} />
                         <NavBtn active={view === 'DEPLOY'} onClick={() => setView('DEPLOY')} icon="radio" label="Rede" disabled={!activeId} activeDot={isOnline} />
-                        <NavBtn active={view === 'HOME'} onClick={() => setView('HOME')} icon="help-circle" label="Ajuda" />
+                        <NavBtn active={view === 'HOME'} onClick={() => setView('HOME')} icon="help-circle" label="Sobre" />
                     </nav>
                 </div>
             );
         };
 
         const NavBtn = ({ active, onClick, icon, label, disabled, activeDot }) => (
-            <button disabled={disabled} onClick={onClick} className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${disabled ? 'opacity-10' : ''} ${active ? 'text-brand scale-110' : 'text-gray-600'}`}>
-                <div className="relative"><Icon name={icon} size={22} />{activeDot && <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-ping"></div>}</div>
-                <span className="text-[9px] uppercase font-black tracking-widest">{label}</span>
+            <button disabled={disabled} onClick={onClick} className={`flex flex-col items-center gap-2 flex-1 transition-all ${disabled ? 'opacity-10 scale-90' : 'hover:scale-105 active:scale-90'} ${active ? 'text-brand' : 'text-gray-600'}`}>
+                <div className="relative">
+                    <Icon name={icon} size={24} />
+                    {activeDot && <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-black animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.6)]"></div>}
+                </div>
+                <span className="text-[9px] uppercase font-black tracking-[0.1em] italic">{label}</span>
             </button>
         );
 
@@ -311,25 +402,28 @@
                 const p = new Peer();
                 p.on('open', () => {
                     const conn = p.connect(nodeId);
-                    conn.on('open', () => { conn.send({ type: 'SYNC' }); });
+                    conn.on('open', () => conn.send({ type: 'SYNC' }));
                     conn.on('data', (d) => {
                         const h = d.files.find(f => f.name.endsWith('.html'))?.content || '';
                         const c = d.files.find(f => f.name.endsWith('.css'))?.content || '';
                         const j = d.files.find(f => f.name.endsWith('.js'))?.content || '';
-                        const content = `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body,html{margin:0;padding:0;width:100vw;height:100vh;overflow:auto;}${c}</style></head><body>${h}<script>${j}<\/script></body></html>`;
-                        localStorage.setItem(`cache_v10_${nodeId}`, content);
+                        const content = `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>${c}</style></head><body>${h}<script>${j}<\/script></body></html>`;
+                        localStorage.setItem(`onxy_cache_${nodeId}`, content);
                         setSrc(content);
                     });
-                    setTimeout(() => {
-                        if(!src) {
-                            const cached = localStorage.getItem(`cache_v10_${nodeId}`);
-                            if(cached) setSrc(cached);
-                        }
-                    }, 4000);
+                    setTimeout(() => { if(!src) setSrc(localStorage.getItem(`onxy_cache_${nodeId}`)); }, 5000);
                 });
             }, []);
-            if (src) return <iframe srcDoc={src} className="gateway-frame" />;
-            return <div className="h-screen bg-black flex items-center justify-center text-brand font-black uppercase text-[10px] tracking-[0.5em] animate-pulse italic">Conectando ao Nó P2P...</div>;
+            if (src) return <iframe srcDoc={src} className="w-screen h-screen border-none" />;
+            return (
+                <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-brand font-black italic">
+                    <div className="text-[10px] tracking-[0.8em] animate-pulse mb-4">ONXY RESOLVING...</div>
+                    <div className="w-48 h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-full bg-brand animate-[loading_2s_infinite]"></div>
+                    </div>
+                    <style>{`@keyframes loading { 0% { width: 0; } 100% { width: 100%; } }`}</style>
+                </div>
+            );
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -337,4 +431,5 @@
     </script>
 </body>
 </html>
+
 
